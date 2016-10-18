@@ -420,7 +420,7 @@ public class ZenModeHelper {
         applyRestrictions(muteCalls, USAGE_NOTIFICATION_RINGTONE);
 
         // alarm restrictions
-        final boolean muteAlarms = false;
+        final boolean muteAlarms = mZenMode == Global.ZEN_MODE_NO_INTERRUPTIONS;
         applyRestrictions(muteAlarms, USAGE_ALARM);
     }
 
@@ -710,10 +710,8 @@ public class ZenModeHelper {
 
         public void update(Uri uri) {
             if (ZEN_MODE.equals(uri)) {
-                int zen = getZenModeSetting();
-                if (mZenMode != zen) {
+                if (mZenMode != getZenModeSetting()) {
                     if (DEBUG) Log.d(TAG, "Fixing zen mode setting");
-                    mZenMode = zen;
                     setZenModeSetting(mZenMode);
                 }
             }

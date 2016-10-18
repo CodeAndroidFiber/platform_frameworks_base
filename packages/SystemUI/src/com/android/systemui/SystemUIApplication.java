@@ -80,7 +80,6 @@ public class SystemUIApplication extends Application {
                 if (mServicesStarted) {
                     final int N = mServices.length;
                     for (int i = 0; i < N; i++) {
-                        mServices[i].mBootCompleted = mBootCompleted;
                         mServices[i].onBootCompleted();
                     }
                 }
@@ -123,7 +122,6 @@ public class SystemUIApplication extends Application {
             }
             mServices[i].mContext = this;
             mServices[i].mComponents = mComponents;
-            mServices[i].mBootCompleted = mBootCompleted;
             if (DEBUG) Log.d(TAG, "running: " + mServices[i]);
             mServices[i].start();
 

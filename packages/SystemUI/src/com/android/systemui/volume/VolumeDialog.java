@@ -18,6 +18,7 @@ package com.android.systemui.volume;
 
 import static android.accessibilityservice.AccessibilityServiceInfo.FEEDBACK_ALL_MASK;
 import static android.accessibilityservice.AccessibilityServiceInfo.FEEDBACK_GENERIC;
+
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.animation.LayoutTransition;
 import android.animation.ObjectAnimator;
@@ -68,7 +69,6 @@ import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 
 import com.android.systemui.R;
-import com.android.systemui.SystemUI;
 import com.android.systemui.statusbar.policy.ZenModeController;
 import com.android.systemui.volume.VolumeDialogController.State;
 import com.android.systemui.volume.VolumeDialogController.StreamState;
@@ -129,9 +129,8 @@ public class VolumeDialog {
     private boolean mPendingRecheckAll;
     private long mCollapseTime;
 
-    public VolumeDialog(SystemUI sysui, Context context, int windowType,
-            VolumeDialogController controller, ZenModeController zenModeController,
-            Callback callback) {
+    public VolumeDialog(Context context, int windowType, VolumeDialogController controller,
+            ZenModeController zenModeController, Callback callback) {
         mContext = context;
         mController = controller;
         mCallback = callback;
@@ -209,7 +208,7 @@ public class VolumeDialog {
         mSettingsButton.setOnClickListener(mClickSettings);
         mExpandButtonAnimationDuration = res.getInteger(R.integer.volume_expand_animation_duration);
         mZenFooter = (ZenFooter) mDialog.findViewById(R.id.volume_zen_footer);
-        mZenFooter.init(this, zenModeController, sysui);
+        mZenFooter.init(zenModeController);
 
         mAccessibility.init();
 
@@ -436,15 +435,6 @@ public class VolumeDialog {
         mHandler.obtainMessage(H.DISMISS, reason, 0).sendToTarget();
     }
 
-    public void dismissWaitForRipple(final int reason) {
-        mHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                mHandler.obtainMessage(H.DISMISS, reason, 0).sendToTarget();
-            }
-        }, WAIT_FOR_RIPPLE);
-    }
-
     private void showH(int reason) {
         if (D.BUG) Log.d(TAG, "showH r=" + Events.DISMISS_REASONS[reason]);
         mHandler.removeMessages(H.SHOW);
@@ -574,6 +564,7 @@ public class VolumeDialog {
     private void updateRowsH() {
         if (D.BUG) Log.d(TAG, "updateRowsH");
         final VolumeRow activeRow = getActiveRow();
+        updateFooterH();
         updateExpandButtonH();
         if (!mShowing) {
             trimObsoleteH();
@@ -641,6 +632,19 @@ public class VolumeDialog {
         for (VolumeRow row : mRows) {
             updateVolumeRowH(row);
         }
+        updateFooterH();
+    }
+
+    private void updateFooterH() {
+        if (D.BUG) Log.d(TAG, "updateFooterH");
+        final boolean wasVisible = mZenFooter.getVisibility() == View.VISIBLE;
+        final boolean visible = mState.zenMode != Global.ZEN_MODE_OFF
+                && mAudioManager.isStreamAffectedByRingerMode(mActiveStream);
+        if (wasVisible != visible && !visible) {
+            prepareForCollapse();
+        }
+        Util.setVisOrGone(mZenFooter, visible);
+        mZenFooter.update();
     }
 
     private void updateVolumeRowH(VolumeRow row) {

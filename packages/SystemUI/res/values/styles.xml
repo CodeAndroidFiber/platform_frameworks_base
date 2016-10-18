@@ -288,7 +288,6 @@
     <style name="TextAppearance.Volume.ZenSummary">
         <item name="android:textSize">14sp</item>
         <item name="android:fontFamily">sans-serif-medium</item>
-        <item name="android:textColor">@color/segmented_button_unselected</item>
     </style>
 
     <style name="TextAppearance.Volume.ZenDetail">
